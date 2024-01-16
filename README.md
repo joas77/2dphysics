@@ -1,4 +1,4 @@
-## 2D Physics Engyne
+## 2D Physics Engine
 
 Code from great course:
 https://pikuma.com/courses/game-physics-engine-programming
