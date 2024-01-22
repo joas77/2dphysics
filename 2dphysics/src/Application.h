@@ -11,6 +11,8 @@ class Application {
         std::vector<Particle> particles;
         Vec2 pushForce = Vec2(0, 0);
 
+        SDL_Rect liquid;
+
     public:
         Application() = default;
         ~Application() = default;

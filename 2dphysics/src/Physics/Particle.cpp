@@ -2,7 +2,7 @@
 #include <iostream>
 
 Particle::Particle(float x, float y, float mass):
-    position{Vec2(x, y)}, mass{mass}
+    radius(4*mass), position{Vec2(x, y)}, mass{mass}
 {
     if(mass != 0.0)
         invMass = 1.0 / mass;

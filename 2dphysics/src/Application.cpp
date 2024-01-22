@@ -1,6 +1,7 @@
 #include "Application.h"
+#include "./Utils.h"
 #include "Physics/Constants.h"
-#include "Graphics.h"
+#include "./Physics/Force.h"
 
 
 bool Application::IsRunning() {
@@ -13,9 +14,18 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
     
-    auto smallBall = Particle(50, 100, 1.0);
-    smallBall.radius = 4;
-    particles.push_back(std::move(smallBall));
+    // auto smallBall = Particle(50, 100, 1.0);
+    // smallBall.radius = 4;
+    // particles.push_back(std::move(smallBall));
+
+    // auto bigBall = Particle(200, 100, 3.0);
+    // bigBall.radius = 12;
+    // particles.push_back(std::move(bigBall));
+
+    liquid.x = 0;
+    liquid.y = Graphics::Height() / 2;
+    liquid.w = Graphics::Width();
+    liquid.h = Graphics::Height() / 2;
 
 }
 
@@ -51,6 +61,16 @@ void Application::Input() {
                 if (event.key.keysym.sym == SDLK_LEFT)
                    pushForce.x = 0;
                 break;
+            case SDL_MOUSEBUTTONDOWN:
+                if(event.button.button == SDL_BUTTON_LEFT) {
+                    particles.push_back(
+                        Particle(
+                            static_cast<float>(event.button.x),
+                            static_cast<float>(event.button.y),
+                            Random<float>().Uniform(1.0, 10.0))
+                        );
+                }
+                break;
         }
     }
 }
@@ -74,17 +94,18 @@ void Application::Update() {
     timePreviousFrame = SDL_GetTicks();
 
     for(auto& particle: particles) {
-        // Appply "wind" force to my particle
-        Vec2 wind = Vec2(0.2 * PIXELS_PER_METER, 0.0);
-        particle.AddForce(wind);
-
         // Apply a "weight" force to my particles
         Vec2 weight = Vec2(0.0, particle.mass * 9.8 * PIXELS_PER_METER);
         particle.AddForce(weight);
 
         // Apply a "push" force to my particles
         particle.AddForce(pushForce);
-        
+
+        // Apply a drag force if we are inside the liquid...
+        if (particle.position.y >= liquid.y) {
+            Vec2 drag = Force::GenerateDragForce(particle, 0.04);
+            particle.AddForce(drag);
+        }
         // integrate the acceleration and the velocity to find the new position
         particle.Integrate(deltaTime);
     
@@ -113,6 +134,9 @@ void Application::Update() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Render() {
     Graphics::ClearScreen(0xFF056263);
+
+    // Draw the liquid on the screen
+    Graphics::DrawFillRect(liquid.x + liquid.w / 2 , liquid.y + liquid.h / 2, liquid.w, liquid.h, 0xFF6E3713); 
     for(auto& particle: particles) {
         Graphics::DrawFillCircle(particle.position.x, particle.position.y, particle.radius, 0xFFFFFFFF);
     }
