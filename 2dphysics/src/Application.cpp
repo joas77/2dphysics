@@ -94,10 +94,8 @@ void Application::Update() {
     timePreviousFrame = SDL_GetTicks();
 
     for(auto& particle: particles) {
-        // Apply a "weight" force to my particles
-        Vec2 weight = Vec2(0.0, particle.mass * 9.8 * PIXELS_PER_METER);
-        particle.AddForce(weight);
-
+        // Apply a "friction" force to my particles
+        particle.AddForce(Force::GenerateFrictionForce(particle, 10.0 * PIXELS_PER_METER));
         // Apply a "push" force to my particles
         particle.AddForce(pushForce);
 
