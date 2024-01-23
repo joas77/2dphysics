@@ -10,8 +10,8 @@ class Application {
         bool running = false;
         std::vector<Particle> particles;
         Vec2 pushForce = Vec2(0, 0);
-
-        SDL_Rect liquid;
+        bool leftMouseButtonDown = false;
+        Vec2 mouseCursor;
 
     public:
         Application() = default;
@@ -23,5 +23,6 @@ class Application {
         void Render();
         void Destroy();
 };
+
 
 #endif
