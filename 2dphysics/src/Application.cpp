@@ -13,18 +13,15 @@ bool Application::IsRunning() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Setup() {
     running = Graphics::OpenWindow();
-    
-    auto particle = Particle(
-            static_cast<int>(Graphics::Width() / 2),
-            static_cast<int>(Graphics::Height() / 2), 
-            1.0);
-    particle.radius = 15;
-    particles.push_back(std::move(particle));
 
-    // auto bigBall = Particle(200, 100, 3.0);
-    // bigBall.radius = 12;
-    // particles.push_back(std::move(bigBall));
 
+    auto smallPlanet = Particle(200, 200, 1.0);
+    smallPlanet.radius = 6;
+    particles.push_back(std::move(smallPlanet));
+
+    auto bigPlanet = Particle(500, 500, 20.0);
+    bigPlanet.radius = 20;
+    particles.push_back(std::move(bigPlanet));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,19 +38,19 @@ void Application::Input() {
                 if (event.key.keysym.sym == SDLK_ESCAPE)
                     running = false;
                 if (event.key.keysym.sym == SDLK_UP)
-                   pushForce.y = -50 * PIXELS_PER_METER; 
+                   pushForce.y = -50 * PIXELS_PER_METER;
                 if (event.key.keysym.sym == SDLK_RIGHT)
-                   pushForce.x = 50 * PIXELS_PER_METER; 
+                   pushForce.x = 50 * PIXELS_PER_METER;
                 if (event.key.keysym.sym == SDLK_DOWN)
-                   pushForce.y = 50 * PIXELS_PER_METER; 
+                   pushForce.y = 50 * PIXELS_PER_METER;
                 if (event.key.keysym.sym == SDLK_LEFT)
-                   pushForce.x = -50 * PIXELS_PER_METER; 
+                   pushForce.x = -50 * PIXELS_PER_METER;
                 break;
             case SDL_KEYUP:
                 if (event.key.keysym.sym == SDLK_UP)
-                   pushForce.y = 0; 
+                   pushForce.y = 0;
                 if (event.key.keysym.sym == SDLK_RIGHT)
-                   pushForce.x = 0; 
+                   pushForce.x = 0;
                 if (event.key.keysym.sym == SDLK_DOWN)
                    pushForce.y = 0;
                 if (event.key.keysym.sym == SDLK_LEFT)
@@ -102,16 +99,26 @@ void Application::Update() {
     // Set the time of the current frame to be used in the next one
     timePreviousFrame = SDL_GetTicks();
 
+    // Apply forces to the particles
     for(auto& particle: particles) {
         // Apply a "friction" force to my particles
-        particle.AddForce(Force::GenerateFrictionForce(particle, 10.0 * PIXELS_PER_METER));
+        particle.AddForce(Force::GenerateFrictionForce(particle, 5));
         // Apply a "push" force to my particles
         particle.AddForce(pushForce);
 
+    }
+
+    // Applying a gravitational force to our particles/planets
+    auto attraction = Force::GenerateGravitationalForce(particles[0], particles[1], 1000.0, 5, 100);
+    particles[0].AddForce(attraction);
+    particles[1].AddForce(-attraction);
+
+
+    for(auto& particle: particles) {
         // integrate the acceleration and the velocity to find the new position
         particle.Integrate(deltaTime);
-    
-        // Nasty hardcoded flip in velocity if it touches the limits of the screen window 
+
+        // Nasty hardcoded flip in velocity if it touches the limits of the screen window
         if(particle.position.x - particle.radius <=0) {
             particle.position.x = particle.radius;
             particle.velocity.x *= -0.9;
@@ -135,15 +142,18 @@ void Application::Update() {
 // Render function (called several times per second to draw objects)
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Render() {
-    Graphics::ClearScreen(0xFF1E4002);
+    Graphics::ClearScreen(0xFF0F0721);
 
     if(leftMouseButtonDown) {
         Graphics::DrawLine(particles[0].position.x, particles[0].position.y, mouseCursor.x, mouseCursor.y, 0xFF0000FF);
     }
 
-    for(auto& particle: particles) {
-        Graphics::DrawFillCircle(particle.position.x, particle.position.y, particle.radius, 0xFFFFFFFF);
-    }
+    Graphics::DrawFillCircle(particles[0].position.x, particles[0].position.y, particles[0].radius, 0xFFAA3300);
+    Graphics::DrawFillCircle(particles[1].position.x, particles[1].position.y, particles[1].radius, 0xFF00FFFF);
+
+    // for(auto& particle: particles) {
+    //     Graphics::DrawFillCircle(particle.position.x, particle.position.y, particle.radius, 0xFFFFFFFF);
+    // }
     Graphics::RenderFrame();
 }
 
