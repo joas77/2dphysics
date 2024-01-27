@@ -16,6 +16,7 @@ struct Particle {
     float invMass;
 
     Particle(float x, float y, float mss);
+    Particle()=default;
     ~Particle();
 
     void AddForce(const Vec2& force);

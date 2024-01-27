@@ -14,14 +14,11 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
 
+    anchor = Vec2(Graphics::Width() / 2, Graphics::Height()/2);//30);
 
-    auto smallPlanet = Particle(200, 200, 1.0);
-    smallPlanet.radius = 6;
-    particles.push_back(std::move(smallPlanet));
-
-    auto bigPlanet = Particle(500, 500, 20.0);
-    bigPlanet.radius = 20;
-    particles.push_back(std::move(bigPlanet));
+    auto bob = std::make_unique<Particle>(Graphics::Width() / 2, Graphics::Height() / 2, 2.0);
+    bob->radius = 10;
+    particles.push_back(std::move(bob));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,9 +67,9 @@ void Application::Input() {
             case SDL_MOUSEBUTTONUP:
                 if(leftMouseButtonDown && event.button.button == SDL_BUTTON_LEFT) {
                     leftMouseButtonDown = false;
-                    auto impulseDirection = (particles[0].position - mouseCursor).UnitVector();
-                    auto impulseMagnitude = (particles[0].position - mouseCursor).Magnitude() * 5.0;
-                    particles[0].velocity = impulseDirection * impulseMagnitude;
+                    auto impulseDirection = (particles[0]->position - mouseCursor).UnitVector();
+                    auto impulseMagnitude = (particles[0]->position - mouseCursor).Magnitude() * 5.0;
+                    particles[0]->velocity = impulseDirection * impulseMagnitude;
                 }
                 break;
             default:
@@ -101,38 +98,38 @@ void Application::Update() {
 
     // Apply forces to the particles
     for(auto& particle: particles) {
-        // Apply a "friction" force to my particles
-        particle.AddForce(Force::GenerateFrictionForce(particle, 5));
         // Apply a "push" force to my particles
-        particle.AddForce(pushForce);
+        particle->AddForce(pushForce);
 
+        // Apply a drag force to my particles
+        particle->AddForce(Force::GenerateDragForce(*particle, 0.001));
+
+        // Apply weight force
+        particle->AddForce(Vec2(0.0, particle->mass * 9.8 * PIXELS_PER_METER));
     }
 
-    // Applying a gravitational force to our particles/planets
-    auto attraction = Force::GenerateGravitationalForce(particles[0], particles[1], 1000.0, 5, 100);
-    particles[0].AddForce(attraction);
-    particles[1].AddForce(-attraction);
-
+    // Apply a spring force to the particle connected to the anchor
+    particles[0]->AddForce(Force::GenerateSpringForce(*particles[0], anchor, restLength, k));
 
     for(auto& particle: particles) {
         // integrate the acceleration and the velocity to find the new position
-        particle.Integrate(deltaTime);
+        particle->Integrate(deltaTime);
 
         // Nasty hardcoded flip in velocity if it touches the limits of the screen window
-        if(particle.position.x - particle.radius <=0) {
-            particle.position.x = particle.radius;
-            particle.velocity.x *= -0.9;
-        } else if(particle.position.x + particle.radius >= Graphics::Width()) {
-            particle.position.x = Graphics::Width() - particle.radius;
-            particle.velocity.x *= -0.9;
+        if(particle->position.x - particle->radius <=0) {
+            particle->position.x = particle->radius;
+            particle->velocity.x *= -0.9;
+        } else if(particle->position.x + particle->radius >= Graphics::Width()) {
+            particle->position.x = Graphics::Width() - particle->radius;
+            particle->velocity.x *= -0.9;
         }
 
-        if(particle.position.y - particle.radius <=0) {
-            particle.position.y = particle.radius;
-            particle.velocity.y *= -0.9;
-        } else if(particle.position.y + particle.radius >= Graphics::Height()){
-            particle.position.y = Graphics::Height() - particle.radius;
-            particle.velocity.y *= -0.9;
+        if(particle->position.y - particle->radius <=0) {
+            particle->position.y = particle->radius;
+            particle->velocity.y *= -0.9;
+        } else if(particle->position.y + particle->radius >= Graphics::Height()){
+            particle->position.y = Graphics::Height() - particle->radius;
+            particle->velocity.y *= -0.9;
         }
     }
 
@@ -145,15 +142,17 @@ void Application::Render() {
     Graphics::ClearScreen(0xFF0F0721);
 
     if(leftMouseButtonDown) {
-        Graphics::DrawLine(particles[0].position.x, particles[0].position.y, mouseCursor.x, mouseCursor.y, 0xFF0000FF);
+        Graphics::DrawLine(particles[0]->position.x, particles[0]->position.y, mouseCursor.x, mouseCursor.y, 0xFF0000FF);
     }
+    // Draw the spring
+    Graphics::DrawLine(anchor.x, anchor.y, particles[0]->position.x, particles[0]->position.y, 0xFF313131);
 
-    Graphics::DrawFillCircle(particles[0].position.x, particles[0].position.y, particles[0].radius, 0xFFAA3300);
-    Graphics::DrawFillCircle(particles[1].position.x, particles[1].position.y, particles[1].radius, 0xFF00FFFF);
+    // Draw the anchor
+    Graphics::DrawFillCircle(anchor.x, anchor.y, 5, 0xFF001155);
 
-    // for(auto& particle: particles) {
-    //     Graphics::DrawFillCircle(particle.position.x, particle.position.y, particle.radius, 0xFFFFFFFF);
-    // }
+    // Draw the bob
+    Graphics::DrawFillCircle(particles[0]->position.x, particles[0]->position.y, particles[0]->radius, 0xFFFFFFFF);
+
     Graphics::RenderFrame();
 }
 
