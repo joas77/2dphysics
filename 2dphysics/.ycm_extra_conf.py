@@ -10,9 +10,9 @@ from os.path import abspath, join, isabs, normpath, exists, splitext, dirname
 # This is the list of default flags.
 ##
 default_flags = [
-#    "-Wall",
-#    "-Wno-unused-variable",
-#    "-Wno-unused-parameter",
+    "-Wall",
+    "-Wno-unused-variable",
+    "-Wno-unused-parameter",
 #    "-Wno-unused-function",
     '-I/usr/local/Cellar/sdl2/2.0.14_1/include/',
     '-lm'
@@ -81,6 +81,8 @@ cpp_additional_flags = [
 
     # Use the latest standard if possible.
     "-std=c++17",
+    "-isystem", "/usr/include/c++/11/",
+    "-isystem", "/usr/include",
 ]
 
 

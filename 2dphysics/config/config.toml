@@ -1,0 +1,18 @@
+[chain]
+x = 900
+y = 50
+nodes =20 
+distance_between_nodes = 15
+k = 1500
+
+[softbody]
+x = 100
+y = 50
+nodes = 3
+distance_between_nodes = 120 
+k = 910
+
+# for some reasing these are the possible maximum values
+# nodes = 7
+# distance_between_nodes = 120 
+# k = 910

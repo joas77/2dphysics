@@ -15,7 +15,7 @@ struct Particle {
     float mass;
     float invMass;
 
-    Particle(float x, float y, float mss);
+    Particle(float x, float y, float mass);
     Particle()=default;
     ~Particle();
 

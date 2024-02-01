@@ -1,7 +1,7 @@
 CC := g++
 DEBUG_BUILD := -g
 LANG_STD := -std=c++17
-FLAGS := -Wall -Wfatal-errors $(DEBUG_BUILD) $(LANG_STD)
+FLAGS := -Wall  $(DEBUG_BUILD) $(LANG_STD)  #-Wfatal-errors
 
 LINKER_FLAGS := -lm -lSDL2 -lSDL2_image -lSDL2_gfx 
 LIBS := -I./libs/

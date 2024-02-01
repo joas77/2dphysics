@@ -1,8 +1,9 @@
+#include <iostream>
+#include <toml++/toml.hpp>
 #include "Application.h"
 #include "./Utils.h"
 #include "Physics/Constants.h"
 #include "./Physics/Force.h"
-
 
 bool Application::IsRunning() {
     return running;
@@ -13,12 +14,14 @@ bool Application::IsRunning() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Setup() {
     running = Graphics::OpenWindow();
-
-    anchor = Vec2(Graphics::Width() / 2, Graphics::Height()/2);//30);
-
-    auto bob = std::make_unique<Particle>(Graphics::Width() / 2, Graphics::Height() / 2, 2.0);
-    bob->radius = 10;
-    particles.push_back(std::move(bob));
+    toml::table configToml;
+    try {
+        configToml = toml::parse_file("./config/config.toml");
+        chain.Setup(*configToml["chain"].as_table());
+        softBody.Setup(*configToml["softbody"].as_table());
+    } catch(const toml::parse_error& err) {
+        std::cerr << "Error at reading config file \n" << err << std::endl;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,9 +70,10 @@ void Application::Input() {
             case SDL_MOUSEBUTTONUP:
                 if(leftMouseButtonDown && event.button.button == SDL_BUTTON_LEFT) {
                     leftMouseButtonDown = false;
-                    auto impulseDirection = (particles[0]->position - mouseCursor).UnitVector();
-                    auto impulseMagnitude = (particles[0]->position - mouseCursor).Magnitude() * 5.0;
-                    particles[0]->velocity = impulseDirection * impulseMagnitude;
+                    auto impulseDirection = (chain.TailPosition() - mouseCursor).UnitVector();
+                    auto impulseMagnitude = (chain.TailPosition() - mouseCursor).Magnitude() * 5.0;
+
+                    chain.ApplyImpulse(impulseDirection * impulseMagnitude);
                 }
                 break;
             default:
@@ -96,42 +100,11 @@ void Application::Update() {
     // Set the time of the current frame to be used in the next one
     timePreviousFrame = SDL_GetTicks();
 
-    // Apply forces to the particles
-    for(auto& particle: particles) {
-        // Apply a "push" force to my particles
-        particle->AddForce(pushForce);
+    softBody.ApplyForce(pushForce);
+    softBody.Update(deltaTime);
 
-        // Apply a drag force to my particles
-        particle->AddForce(Force::GenerateDragForce(*particle, 0.001));
-
-        // Apply weight force
-        particle->AddForce(Vec2(0.0, particle->mass * 9.8 * PIXELS_PER_METER));
-    }
-
-    // Apply a spring force to the particle connected to the anchor
-    particles[0]->AddForce(Force::GenerateSpringForce(*particles[0], anchor, restLength, k));
-
-    for(auto& particle: particles) {
-        // integrate the acceleration and the velocity to find the new position
-        particle->Integrate(deltaTime);
-
-        // Nasty hardcoded flip in velocity if it touches the limits of the screen window
-        if(particle->position.x - particle->radius <=0) {
-            particle->position.x = particle->radius;
-            particle->velocity.x *= -0.9;
-        } else if(particle->position.x + particle->radius >= Graphics::Width()) {
-            particle->position.x = Graphics::Width() - particle->radius;
-            particle->velocity.x *= -0.9;
-        }
-
-        if(particle->position.y - particle->radius <=0) {
-            particle->position.y = particle->radius;
-            particle->velocity.y *= -0.9;
-        } else if(particle->position.y + particle->radius >= Graphics::Height()){
-            particle->position.y = Graphics::Height() - particle->radius;
-            particle->velocity.y *= -0.9;
-        }
-    }
+    chain.ApplyForce(pushForce);
+    chain.Update(deltaTime);
 
 }
 
@@ -141,17 +114,8 @@ void Application::Update() {
 void Application::Render() {
     Graphics::ClearScreen(0xFF0F0721);
 
-    if(leftMouseButtonDown) {
-        Graphics::DrawLine(particles[0]->position.x, particles[0]->position.y, mouseCursor.x, mouseCursor.y, 0xFF0000FF);
-    }
-    // Draw the spring
-    Graphics::DrawLine(anchor.x, anchor.y, particles[0]->position.x, particles[0]->position.y, 0xFF313131);
-
-    // Draw the anchor
-    Graphics::DrawFillCircle(anchor.x, anchor.y, 5, 0xFF001155);
-
-    // Draw the bob
-    Graphics::DrawFillCircle(particles[0]->position.x, particles[0]->position.y, particles[0]->radius, 0xFFFFFFFF);
+    softBody.Render();
+    chain.Render();
 
     Graphics::RenderFrame();
 }

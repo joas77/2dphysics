@@ -5,18 +5,20 @@
 #include <memory>
 #include "./Graphics.h"
 #include "./Physics/Particle.h"
+#include "./Physics/Constants.h"
+#include "./Physics/SoftBody.h"
+#include "./Physics/Chain.h"
 
 class Application {
     private:
         bool running = false;
-        std::vector<std::unique_ptr<Particle>> particles;
         Vec2 pushForce = Vec2(0, 0);
         Vec2 mouseCursor = Vec2(0,0);
         bool leftMouseButtonDown = false;
 
-        Vec2 anchor;
-        float k = 100;
-        float restLength = 400;
+        std::vector<std::unique_ptr<Particle>> particles;
+        SoftBody softBody;        
+        Chain chain;
 
     public:
         Application() = default;
@@ -28,6 +30,5 @@ class Application {
         void Render();
         void Destroy();
 };
-
 
 #endif
