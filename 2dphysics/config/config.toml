@@ -8,7 +8,7 @@ k = 1500
 [softbody]
 x = 100
 y = 50
-nodes = 3
+nodes = 7
 distance_between_nodes = 120 
 k = 910
 
