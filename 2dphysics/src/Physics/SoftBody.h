@@ -4,10 +4,10 @@
 #include <memory>
 #include <vector>
 #include <toml++/toml.hpp>
-#include "./Particle.h"
+#include "./Body.h"
 #include "./Constants.h"
 
-using Particles = std::vector<Particle>;
+using Bodies = std::vector<Body>;
 
 class SoftBody{
 public:
@@ -20,7 +20,7 @@ public:
 private:
     float k=0;
     float restLength=400;
-    Particles particles;
+    Bodies bodies;
 
     void checkBounce();
 };

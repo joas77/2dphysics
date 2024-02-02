@@ -1,15 +1,15 @@
 #include <algorithm>
 #include "./Force.h"
 
-Vec2 Force::GenerateDragForce(const Particle& particle, float k) {
+Vec2 Force::GenerateDragForce(const Body& body, float k) {
     Vec2 dragForce = Vec2(0, 0);
 
-    if (particle.velocity.MagnitudeSquared() > 0) {
+    if (body.velocity.MagnitudeSquared() > 0) {
         // Calculate the drag direction (inverse of velocity unit vector)
-        Vec2 dragDirection = particle.velocity.UnitVector() * -1.0;
+        Vec2 dragDirection = body.velocity.UnitVector() * -1.0;
 
         // Calculate the drag magnitude, k * |v|^2
-        float dragMagnitude = k * particle.velocity.MagnitudeSquared();
+        float dragMagnitude = k * body.velocity.MagnitudeSquared();
 
         // Generate the final drag force with direction and magnitude
         dragForce = dragDirection * dragMagnitude;
@@ -18,13 +18,13 @@ Vec2 Force::GenerateDragForce(const Particle& particle, float k) {
     return dragForce;
 }
 
-Vec2 Force::GenerateFrictionForce(const Particle& particle, float k) {
-    return particle.velocity.UnitVector() * -k;
+Vec2 Force::GenerateFrictionForce(const Body& body, float k) {
+    return body.velocity.UnitVector() * -k;
 }
 
 Vec2 Force::GenerateGravitationalForce(
-        const Particle& a,
-        const Particle& b,
+        const Body& a,
+        const Body& b,
         float G, float minDistance, float maxDistance) {
     // Calculate the distance between the two objects
     Vec2 d = b.position - a.position;
@@ -44,9 +44,9 @@ Vec2 Force::GenerateGravitationalForce(
     return attractionDirection * attractionMagnitude;
 }
 
-Vec2 Force::GenerateSpringForce(const Particle& particle, const Vec2& anchor, float restLength, float k) {
+Vec2 Force::GenerateSpringForce(const Body& body, const Vec2& anchor, float restLength, float k) {
     // Calculate the distance between the anchor and the object
-    auto d = particle.position - anchor;
+    auto d = body.position - anchor;
 
     // Find the spring displacement considering the rest length
     auto displacement = d.Magnitude() - restLength;
@@ -55,7 +55,7 @@ Vec2 Force::GenerateSpringForce(const Particle& particle, const Vec2& anchor, fl
     return  d.UnitVector() * ( -k * displacement );
 }
 
-Vec2 Force::GenerateSpringForce(const Particle& a, const Particle& b, float restLength, float k) {
+Vec2 Force::GenerateSpringForce(const Body& a, const Body& b, float restLength, float k) {
     // Calculate the distance between the anchor and the object
     auto d = a.position - b.position;
 

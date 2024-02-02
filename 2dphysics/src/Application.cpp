@@ -1,5 +1,4 @@
-#include <iostream>
-#include <toml++/toml.hpp>
+//#include <toml++/toml.hpp>
 #include "Application.h"
 #include "./Utils.h"
 #include "Physics/Constants.h"
@@ -14,14 +13,10 @@ bool Application::IsRunning() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Setup() {
     running = Graphics::OpenWindow();
-    toml::table configToml;
-    try {
-        configToml = toml::parse_file("./config/config.toml");
-        chain.Setup(*configToml["chain"].as_table());
-        softBody.Setup(*configToml["softbody"].as_table());
-    } catch(const toml::parse_error& err) {
-        std::cerr << "Error at reading config file \n" << err << std::endl;
-    }
+
+    auto body = std::make_unique<Body>(300, 100, 4);
+    body->radius = 4;
+    bodies.push_back(std::move(body));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,10 +65,9 @@ void Application::Input() {
             case SDL_MOUSEBUTTONUP:
                 if(leftMouseButtonDown && event.button.button == SDL_BUTTON_LEFT) {
                     leftMouseButtonDown = false;
-                    auto impulseDirection = (chain.TailPosition() - mouseCursor).UnitVector();
-                    auto impulseMagnitude = (chain.TailPosition() - mouseCursor).Magnitude() * 5.0;
+                    auto impulseDirection = (bodies[0]->position - mouseCursor).UnitVector();
+                    auto impulseMagnitude = (bodies[0]->position - mouseCursor).Magnitude() * 5.0;
 
-                    chain.ApplyImpulse(impulseDirection * impulseMagnitude);
                 }
                 break;
             default:
@@ -100,11 +94,15 @@ void Application::Update() {
     // Set the time of the current frame to be used in the next one
     timePreviousFrame = SDL_GetTicks();
 
-    softBody.ApplyForce(pushForce);
-    softBody.Update(deltaTime);
+    for(auto& body : bodies ) {
+        body->AddForce(pushForce);
+        body->AddForce(Vec2(0.0, body->mass * G_ACCEL * PIXELS_PER_METER));
+        body->AddForce(Force::GenerateDragForce(*body, 0.001));
 
-    chain.ApplyForce(pushForce);
-    chain.Update(deltaTime);
+        body->Integrate(deltaTime);
+
+        checkBounce(*body);
+    }
 
 }
 
@@ -113,9 +111,9 @@ void Application::Update() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Render() {
     Graphics::ClearScreen(0xFF0F0721);
-
-    softBody.Render();
-    chain.Render();
+    
+    for(auto& body : bodies )
+        Graphics::DrawFillCircle(body->position.x, body->position.y, body->radius, 0xFF11FF11);
 
     Graphics::RenderFrame();
 }
@@ -125,4 +123,27 @@ void Application::Render() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Destroy() {
     Graphics::CloseWindow();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Helper methods
+///////////////////////////////////////////////////////////////////////////////
+void Application::checkBounce(Body& body) {
+    // Nasty hardcoded flip in velocity if it touches the limits of the screen window
+    if(body.position.x - body.radius <=0) {
+        body.position.x = body.radius;
+        body.velocity.x *= -0.9;
+    } else if(body.position.x + body.radius >= Graphics::Width()) {
+        body.position.x = Graphics::Width() - body.radius;
+        body.velocity.x *= -0.9;
+    }
+
+    if(body.position.y - body.radius <=0) {
+        body.position.y = body.radius;
+        body.velocity.y *= -0.9;
+    } else if(body.position.y + body.radius >= Graphics::Height()){
+        body.position.y = Graphics::Height() - body.radius;
+        body.velocity.y *= -0.9;
+    }
 }

@@ -11,23 +11,23 @@ void Chain::Setup(const toml::table& config) {
     anchor = Vec2(x, y);
 
     for(int i=1; i<=nodes; i++) {
-        auto p = Particle(x, y+ i*restLength, 4.0);
+        auto p = Body(x, y+ i*restLength, 4.0);
         p.radius = 5;
         chain.push_back(std::move(p));
     }
 }
 
 void Chain::Update(float deltaTime) {
-    for(auto& particle: chain ) {
+    for(auto& body: chain ) {
         // Apply weight force
-        particle.AddForce(Vec2(0.0, particle.mass * G_ACCEL * PIXELS_PER_METER));
+        body.AddForce(Vec2(0.0, body.mass * G_ACCEL * PIXELS_PER_METER));
         
-        // Apply a drag force to my particles
-        particle.AddForce(Force::GenerateDragForce(particle, 0.001));
+        // Apply a drag force to my bodies
+        body.AddForce(Force::GenerateDragForce(body, 0.001));
     }
 
     // Apply springforce
-    // Apply a spring force to the particle connected to the anchor
+    // Apply a spring force to the body connected to the anchor
     chain[0].AddForce(Force::GenerateSpringForce(chain[0], anchor, restLength, k));
     for(auto it = chain.rbegin(); it!= chain.rend() -1; ++it) {
         auto current = it;
@@ -39,8 +39,8 @@ void Chain::Update(float deltaTime) {
     }
 
 
-    for(auto& particle: chain )
-        particle.Integrate(deltaTime);
+    for(auto& body: chain )
+        body.Integrate(deltaTime);
 
 
     checkBounce();
@@ -59,8 +59,8 @@ void Chain::Render() {
 
     Graphics::DrawFillCircle(anchor.x, anchor.y, 4, 0xFF1111FF);
 
-    for(auto& particle: chain) {
-        Graphics::DrawFillCircle(particle.position.x, particle.position.y, particle.radius, 0xFFFFFFFF);
+    for(auto& body: chain) {
+        Graphics::DrawFillCircle(body.position.x, body.position.y, body.radius, 0xFFFFFFFF);
     }
 }
 

@@ -2,12 +2,12 @@
 #define CHAIN_H
 #include <vector>
 #include <toml++/toml.hpp>
-#include "./Particle.h"
+#include "./Body.h"
 #include "./Force.h"
 #include "./Vec2.h"
 #include "../Graphics.h"
 
-using Particles = std::vector<Particle>;
+using Bodies = std::vector<Body>;
 
 class Chain {
 public:
@@ -19,7 +19,7 @@ public:
     const Vec2& TailPosition() const;
 
 private:
-    Particles chain;    
+    Bodies chain;    
     Vec2 anchor;
     float k;
     float restLength;

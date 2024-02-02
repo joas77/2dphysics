@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 #include "./Graphics.h"
-#include "./Physics/Particle.h"
+#include "./Physics/Body.h"
 #include "./Physics/Constants.h"
 #include "./Physics/SoftBody.h"
 #include "./Physics/Chain.h"
@@ -16,9 +16,9 @@ class Application {
         Vec2 mouseCursor = Vec2(0,0);
         bool leftMouseButtonDown = false;
 
-        std::vector<std::unique_ptr<Particle>> particles;
-        SoftBody softBody;        
-        Chain chain;
+        std::vector<std::unique_ptr<Body>> bodies;
+
+        void checkBounce(Body& body);
 
     public:
         Application() = default;
