@@ -1,4 +1,3 @@
-//#include <toml++/toml.hpp>
 #include "Application.h"
 #include "./Utils.h"
 #include "Physics/Constants.h"
@@ -14,8 +13,7 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
 
-    auto body = std::make_unique<Body>(300, 100, 4);
-    body->radius = 4;
+    auto body = std::make_unique<Body>(new CircleShape(50), 300, 100, 1.0);
     bodies.push_back(std::move(body));
 }
 
@@ -99,6 +97,9 @@ void Application::Update() {
         body->AddForce(Vec2(0.0, body->mass * G_ACCEL * PIXELS_PER_METER));
         body->AddForce(Force::GenerateDragForce(*body, 0.001));
 
+        float torque = 100;
+        body->AddTorque(torque);
+
         body->Integrate(deltaTime);
 
         checkBounce(*body);
@@ -112,8 +113,14 @@ void Application::Update() {
 void Application::Render() {
     Graphics::ClearScreen(0xFF0F0721);
     
-    for(auto& body : bodies )
-        Graphics::DrawFillCircle(body->position.x, body->position.y, body->radius, 0xFF11FF11);
+    for(auto& body : bodies ) {
+        if(body->shape->GetType() == ShapeType::CIRCLE) {
+            CircleShape* circleShape = dynamic_cast<CircleShape*>(body->shape);
+            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, body->GetRotation(), 0xFF11FF11);
+        } else {
+            // TODO: Draw other types of shapes
+        }
+    }
 
     Graphics::RenderFrame();
 }
@@ -131,19 +138,22 @@ void Application::Destroy() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::checkBounce(Body& body) {
     // Nasty hardcoded flip in velocity if it touches the limits of the screen window
-    if(body.position.x - body.radius <=0) {
-        body.position.x = body.radius;
-        body.velocity.x *= -0.9;
-    } else if(body.position.x + body.radius >= Graphics::Width()) {
-        body.position.x = Graphics::Width() - body.radius;
-        body.velocity.x *= -0.9;
-    }
+    if(body.shape->GetType() == ShapeType::CIRCLE) {
+        CircleShape* circleShape = dynamic_cast<CircleShape*>(body.shape);
+        if(body.position.x - circleShape->radius <=0) {
+            body.position.x = circleShape->radius;
+            body.velocity.x *= -0.9;
+        } else if(body.position.x + circleShape->radius >= Graphics::Width()) {
+            body.position.x = Graphics::Width() - circleShape->radius;
+            body.velocity.x *= -0.9;
+        }
 
-    if(body.position.y - body.radius <=0) {
-        body.position.y = body.radius;
-        body.velocity.y *= -0.9;
-    } else if(body.position.y + body.radius >= Graphics::Height()){
-        body.position.y = Graphics::Height() - body.radius;
-        body.velocity.y *= -0.9;
+        if(body.position.y - circleShape->radius <=0) {
+            body.position.y = circleShape->radius;
+            body.velocity.y *= -0.9;
+        } else if(body.position.y + circleShape->radius >= Graphics::Height()){
+            body.position.y = Graphics::Height() - circleShape->radius;
+            body.velocity.y *= -0.9;
+        }
     }
 }

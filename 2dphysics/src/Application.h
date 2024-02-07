@@ -6,8 +6,6 @@
 #include "./Graphics.h"
 #include "./Physics/Body.h"
 #include "./Physics/Constants.h"
-#include "./Physics/SoftBody.h"
-#include "./Physics/Chain.h"
 
 class Application {
     private:
