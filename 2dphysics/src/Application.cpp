@@ -13,7 +13,7 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
 
-    auto body = std::make_unique<Body>(new CircleShape(50), 300, 100, 1.0);
+    auto body = std::make_unique<Body>(std::move(std::make_unique<CircleShape>(50)), 300, 100, 1.0);
     bodies.push_back(std::move(body));
 }
 
@@ -114,9 +114,9 @@ void Application::Render() {
     Graphics::ClearScreen(0xFF0F0721);
     
     for(auto& body : bodies ) {
-        if(body->shape->GetType() == ShapeType::CIRCLE) {
-            CircleShape* circleShape = dynamic_cast<CircleShape*>(body->shape);
-            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, body->GetRotation(), 0xFF11FF11);
+        if(body->GetShape().GetType() == ShapeType::CIRCLE) {
+            auto circleShape = dynamic_cast<CircleShape&>(body->GetShape());
+            Graphics::DrawCircle(body->position.x, body->position.y, circleShape.radius, body->GetRotation(), 0xFF11FF11);
         } else {
             // TODO: Draw other types of shapes
         }
@@ -138,21 +138,21 @@ void Application::Destroy() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::checkBounce(Body& body) {
     // Nasty hardcoded flip in velocity if it touches the limits of the screen window
-    if(body.shape->GetType() == ShapeType::CIRCLE) {
-        CircleShape* circleShape = dynamic_cast<CircleShape*>(body.shape);
-        if(body.position.x - circleShape->radius <=0) {
-            body.position.x = circleShape->radius;
+    if(body.GetShape().GetType() == ShapeType::CIRCLE) {
+        auto circleShape = dynamic_cast<CircleShape&>(body.GetShape());
+        if(body.position.x - circleShape.radius <=0) {
+            body.position.x = circleShape.radius;
             body.velocity.x *= -0.9;
-        } else if(body.position.x + circleShape->radius >= Graphics::Width()) {
-            body.position.x = Graphics::Width() - circleShape->radius;
+        } else if(body.position.x + circleShape.radius >= Graphics::Width()) {
+            body.position.x = Graphics::Width() - circleShape.radius;
             body.velocity.x *= -0.9;
         }
 
-        if(body.position.y - circleShape->radius <=0) {
-            body.position.y = circleShape->radius;
+        if(body.position.y - circleShape.radius <=0) {
+            body.position.y = circleShape.radius;
             body.velocity.y *= -0.9;
-        } else if(body.position.y + circleShape->radius >= Graphics::Height()){
-            body.position.y = Graphics::Height() - circleShape->radius;
+        } else if(body.position.y + circleShape.radius >= Graphics::Height()){
+            body.position.y = Graphics::Height() - circleShape.radius;
             body.velocity.y *= -0.9;
         }
     }

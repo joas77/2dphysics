@@ -1,6 +1,7 @@
 #ifndef BODY_H
 #define BODY_H
 
+#include <memory>
 #include "Vec2.h"
 #include "Shape.h"
 
@@ -14,9 +15,8 @@ public:
     Vec2 acceleration;
 
     float mass;
-    Shape* shape;
 
-    Body(Shape* shape, float x, float y, float mass);
+    Body(std::unique_ptr<Shape> shape, float x, float y, float mass);
     Body()=delete;
     ~Body();
 
@@ -26,7 +26,9 @@ public:
     void Integrate(float dt);
 
     float GetRotation() const;
+    Shape& GetShape();
 private:
+    std::unique_ptr<Shape> shape;
     // Angular rotation
     float rotation;
     float angularVelocity;
