@@ -16,7 +16,7 @@ public:
 
     float mass;
 
-    Body(std::unique_ptr<Shape> shape, float x, float y, float mass);
+    Body(const Shape& shape, float x, float y, float mass);
     Body()=delete;
     ~Body();
 
@@ -26,7 +26,7 @@ public:
     void Integrate(float dt);
 
     float GetRotation() const;
-    Shape& GetShape();
+    Shape& GetShape() const;
 private:
     std::unique_ptr<Shape> shape;
     // Angular rotation

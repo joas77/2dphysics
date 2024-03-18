@@ -1,11 +1,11 @@
 #include "Body.h"
 #include <iostream>
 
-Body::Body(std::unique_ptr<Shape> shape, float x, float y, float mass):
+Body::Body(const Shape& shape, float x, float y, float mass):
     position{Vec2(x, y)},
     velocity{Vec2(0,0)},
     acceleration{Vec2(0,0)},
-    mass{mass}, shape(shape),
+    mass{mass}, shape{shape.Clone()},
     rotation{0}, angularVelocity{0}, angularAcceleration{0},
     sumForces{Vec2(0,0)}, sumTorque{0}
 {
@@ -79,6 +79,6 @@ float Body::GetRotation() const {
     return rotation;
 }
 
-Shape& GetShape() {
-    return shape;
+Shape& Body::GetShape() const {
+    return *shape;
 }

@@ -11,6 +11,10 @@ CircleShape::~CircleShape() {
     std::cout << "CicleShape destructor called!" <<  std::endl;
 }
 
+std::unique_ptr<Shape> CircleShape::Clone() const {
+    return std::make_unique<CircleShape>(radius);
+}
+
 ShapeType CircleShape::GetType() const {
     return ShapeType::CIRCLE; 
 }
@@ -28,6 +32,10 @@ PoligonShape::~PoligonShape() {
     // TODO: ...
 }
 
+std::unique_ptr<Shape> PoligonShape::Clone() const {
+    return std::make_unique<PoligonShape>(vertices);
+}
+
 float PoligonShape::GetMomentOfInertia() const {
     // TODO...
     return 0.0;
@@ -37,18 +45,19 @@ ShapeType PoligonShape::GetType() const {
     return ShapeType::POLIGON;
 }
 
-BoxShape::BoxShape(float width, float height) {
-    // TODO: ...
-}
+// BoxShape::BoxShape(float width, float height) : PoligonShape() {
+//     // TODO: ...
+// }
 
-BoxShape::~BoxShape() {
-    // TODO: ...
-}
 
-ShapeType BoxShape::GetType() const {
-    return ShapeType::BOX;
-}
+// std::unique_ptr<Shape> BoxShape::Clone() const {
+//     return std::make_unique<Shape>(width, height);
+// }
 
-float BoxShape::GetMomentOfInertia() const {
-    return 0.083333 * (width * width + height * height);
-}
+// ShapeType BoxShape::GetType() const {
+//     return ShapeType::BOX;
+// }
+
+// float BoxShape::GetMomentOfInertia() const {
+//     return 0.083333 * (width * width + height * height);
+// }

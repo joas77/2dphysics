@@ -13,7 +13,7 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
 
-    auto body = std::make_unique<Body>(std::move(std::make_unique<CircleShape>(50)), 300, 100, 1.0);
+    auto body = std::make_unique<Body>(CircleShape(50), 300, 100, 1.0);
     bodies.push_back(std::move(body));
 }
 
