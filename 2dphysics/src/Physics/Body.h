@@ -24,9 +24,10 @@ public:
     void AddTorque(float torque);
 
     void Integrate(float dt);
+    void Update(float dt);
 
     float GetRotation() const;
-    Shape& GetShape() const;
+    Shape& GetShape();
 private:
     std::unique_ptr<Shape> shape;
     // Angular rotation

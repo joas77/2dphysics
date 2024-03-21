@@ -7,7 +7,7 @@
 
 enum class ShapeType {
     CIRCLE,
-    POLIGON,
+    POLYGON,
     BOX
 };
 
@@ -31,21 +31,28 @@ public:
     std::unique_ptr<Shape> Clone() const override;
 };
 
-class PoligonShape: public Shape {
+
+class PolygonShape: public Shape {
 public:
-    //PoligonShape() = delete;
-    PoligonShape(const std::vector<Vec2>& vertices);
+    PolygonShape(const std::vector<Vec2>& vertices);
+    PolygonShape(const PolygonShape&)=delete;
+    PolygonShape& operator=(const PolygonShape&)=delete;
+    
     ShapeType GetType() const override;
-    virtual ~PoligonShape();
     float GetMomentOfInertia() const override;
     std::unique_ptr<Shape> Clone() const override;
-private:
-    std::vector<Vec2> vertices;
+
+    const std::vector<Vec2>& GetVertices() const;
+
+    // Function to rotate and translate the polygon vertices from "local space" to "world space"
+    void UpdateVertices(float angle, const Vec2& position);
+protected:
+    std::vector<Vec2> localVertices;
+    std::vector<Vec2> worldVertices;
 };
 
-class BoxShape: public PoligonShape {
+class BoxShape: public PolygonShape {
 public:
-    //BoxShape() = delete;
     BoxShape(float width, float height);
 
     ShapeType GetType() const override;

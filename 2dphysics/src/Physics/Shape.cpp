@@ -1,63 +1,86 @@
 #include <iostream>
+#include <algorithm>
 #include "Shape.h"
 
-CircleShape::CircleShape(float  radius):
-    radius{radius}
+CircleShape::CircleShape(float radius) : radius{radius}
 {
-    std::cout << "CicleShape constructor called!" <<  std::endl;
+    std::cout << "CicleShape constructor called!" << std::endl;
 }
 
-CircleShape::~CircleShape() {
-    std::cout << "CicleShape destructor called!" <<  std::endl;
+CircleShape::~CircleShape()
+{
+    std::cout << "CicleShape destructor called!" << std::endl;
 }
 
-std::unique_ptr<Shape> CircleShape::Clone() const {
+std::unique_ptr<Shape> CircleShape::Clone() const
+{
     return std::make_unique<CircleShape>(radius);
 }
 
-ShapeType CircleShape::GetType() const {
-    return ShapeType::CIRCLE; 
+ShapeType CircleShape::GetType() const
+{
+    return ShapeType::CIRCLE;
 }
 
-float CircleShape::GetMomentOfInertia() const {
+float CircleShape::GetMomentOfInertia() const
+{
     // this still needs to be multiplied by the rigidbody's mass
     return 0.5 * radius * radius;
 }
 
-PoligonShape::PoligonShape(const std::vector<Vec2>& vertices) {
-    // TODO: ...
+PolygonShape::PolygonShape(const std::vector<Vec2> &vertices)
+    : localVertices{vertices}, worldVertices{vertices}
+{
 }
 
-PoligonShape::~PoligonShape() {
-    // TODO: ...
+std::unique_ptr<Shape> PolygonShape::Clone() const
+{
+    return std::make_unique<PolygonShape>(localVertices);
 }
 
-std::unique_ptr<Shape> PoligonShape::Clone() const {
-    return std::make_unique<PoligonShape>(vertices);
-}
-
-float PoligonShape::GetMomentOfInertia() const {
+float PolygonShape::GetMomentOfInertia() const
+{
     // TODO...
     return 0.0;
 }
 
-ShapeType PoligonShape::GetType() const {
-    return ShapeType::POLIGON;
+ShapeType PolygonShape::GetType() const
+{
+    return ShapeType::POLYGON;
 }
 
-// BoxShape::BoxShape(float width, float height) : PoligonShape() {
-//     // TODO: ...
-// }
+const std::vector<Vec2> &PolygonShape::GetVertices() const
+{
+    return worldVertices;
+}
 
+void PolygonShape::UpdateVertices(float angle, const Vec2 &position)
+{
+    // Loop all the vertices, transforming from local to world space
+    std::transform(localVertices.cbegin(), localVertices.cend(), worldVertices.begin(),
+    [angle, &position](const Vec2& vertex){
+        return vertex.Rotate(angle) + position;
+    });
+}
 
-// std::unique_ptr<Shape> BoxShape::Clone() const {
-//     return std::make_unique<Shape>(width, height);
-// }
+BoxShape::BoxShape(float width, float height)
+    : PolygonShape({Vec2(-width / 2.0, -height / 2.0),
+                    Vec2(+width / 2.0, -height / 2.0),
+                    Vec2(+width / 2.0, +height / 2.0),
+                    Vec2(-width / 2.0, +height / 2.0)}),
+      width{width}, height{height} {}
 
-// ShapeType BoxShape::GetType() const {
-//     return ShapeType::BOX;
-// }
+std::unique_ptr<Shape> BoxShape::Clone() const
+{
+    return std::unique_ptr<Shape>(new BoxShape(width, height));
+}
 
-// float BoxShape::GetMomentOfInertia() const {
-//     return 0.083333 * (width * width + height * height);
-// }
+ShapeType BoxShape::GetType() const
+{
+    return ShapeType::BOX;
+}
+
+float BoxShape::GetMomentOfInertia() const
+{
+    return 0.083333 * (width * width + height * height);
+}
