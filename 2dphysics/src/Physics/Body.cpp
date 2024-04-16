@@ -98,7 +98,12 @@ float Body::GetRotation() const
     return rotation;
 }
 
-Shape &Body::GetShape()
+const Shape &Body::GetShape() const
+{
+    return *shape;
+}
+
+Shape& Body::GetShape()
 {
     return *shape;
 }

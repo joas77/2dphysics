@@ -1,7 +1,8 @@
 #include "Application.h"
 #include "./Utils.h"
 #include "Physics/Constants.h"
-#include "./Physics/Force.h"
+#include "Physics/Force.h"
+#include "Physics/CollisionDetection.h"
 
 bool Application::IsRunning()
 {
@@ -35,43 +36,7 @@ void Application::Input()
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
-            if (event.key.keysym.sym == SDLK_UP)
-                pushForce.y = -50 * PIXELS_PER_METER;
-            if (event.key.keysym.sym == SDLK_RIGHT)
-                pushForce.x = 50 * PIXELS_PER_METER;
-            if (event.key.keysym.sym == SDLK_DOWN)
-                pushForce.y = 50 * PIXELS_PER_METER;
-            if (event.key.keysym.sym == SDLK_LEFT)
-                pushForce.x = -50 * PIXELS_PER_METER;
-            break;
-        case SDL_KEYUP:
-            if (event.key.keysym.sym == SDLK_UP)
-                pushForce.y = 0;
-            if (event.key.keysym.sym == SDLK_RIGHT)
-                pushForce.x = 0;
-            if (event.key.keysym.sym == SDLK_DOWN)
-                pushForce.y = 0;
-            if (event.key.keysym.sym == SDLK_LEFT)
-                pushForce.x = 0;
-            break;
-            // case SDL_MOUSEMOTION:
-            //     mouseCursor.x = event.motion.x;
-            //     mouseCursor.y = event.motion.y;
-            //     break;
-            // case SDL_MOUSEBUTTONDOWN:
-            //     if(!leftMouseButtonDown && event.button.button == SDL_BUTTON_LEFT) {
-            //         leftMouseButtonDown = true;
-            //         mouseCursor.x = event.button.x;
-            //         mouseCursor.y = event.button.y;
-            //     }
-            //     break;
-            // case SDL_MOUSEBUTTONUP:
-            //     if(leftMouseButtonDown && event.button.button == SDL_BUTTON_LEFT) {
-            //         leftMouseButtonDown = false;
-            //         auto impulseDirection = (bodies[0].position - mouseCursor).UnitVector();
-            //         auto impulseMagnitude = (bodies[0].position - mouseCursor).Magnitude() * 5.0;
-
-            //     }
+            // ...
             break;
         default:
             break;
@@ -110,6 +75,25 @@ void Application::Update()
         body->Update(deltaTime);
         checkBounce(*body);
     }
+
+    for (size_t i = 0; i < bodies.size() - 1; i++)
+    {
+        for (size_t j = i + 1; j < bodies.size(); j++)
+        {
+            auto &a = bodies[i];
+            auto &b = bodies[j];
+            if (CollisionDetection::IsColliding(*a, *b))
+            {
+                a->isColliding = true;
+                b->isColliding = true;
+            }
+            else
+            {
+                a->isColliding = false;
+                b->isColliding = false;
+            }
+                }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,14 +105,17 @@ void Application::Render()
 
     for (auto &body : bodies)
     {
+        Uint32 color = body->isColliding ? 0xFF0000FF : 0xFFFFFFFF;
+        // TODO consider using typeid instead enum shapes
+        // See: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rh-dynamic_cast
         if (body->GetShape().GetType() == ShapeType::CIRCLE)
         {
-            const auto &circleShape = dynamic_cast<CircleShape &>(body->GetShape());
-            Graphics::DrawCircle(body->position.x, body->position.y, circleShape.radius, body->GetRotation(), 0xFF11FF11);
+            const auto &circleShape = dynamic_cast<const CircleShape &>(body->GetShape());
+            Graphics::DrawCircle(body->position.x, body->position.y, circleShape.radius, body->GetRotation(), color);
         }
         else if (body->GetShape().GetType() == ShapeType::BOX)
         {
-            const auto &boxShape = dynamic_cast<BoxShape &>(body->GetShape());
+            const auto &boxShape = dynamic_cast<const BoxShape &>(body->GetShape());
             Graphics::DrawPolygon(body->position.x, body->position.y, boxShape.GetVertices(), 0xFFFFFFFF);
         }
         else

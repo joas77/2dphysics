@@ -9,6 +9,7 @@
 // but should be a better maybe pass only the enum
 class Body {
 public:
+    bool isColliding {false};
     // Linear motion
     Vec2 position;
     Vec2 velocity;
@@ -27,6 +28,7 @@ public:
     void Update(float dt);
 
     float GetRotation() const;
+    const Shape& GetShape() const;
     Shape& GetShape();
 private:
     std::unique_ptr<Shape> shape;
