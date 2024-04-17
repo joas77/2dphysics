@@ -2,11 +2,12 @@
 #define COLLISIONDETECTION_H
 
 #include "Body.h"
+#include "Contact.h"
 
 namespace CollisionDetection
 {
-    bool IsColliding(const Body& a, const Body& b);
-    bool IsCollidingCircleCircle(const Body& a, const Body& b);
+    bool IsColliding(const Body& a, const Body& b, Contact& contact);
+    bool IsCollidingCircleCircle(const Body& a, const Body& b, Contact& contact);
 } // namespace CollissionDetection
 
 

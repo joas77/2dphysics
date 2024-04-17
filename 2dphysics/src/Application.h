@@ -14,7 +14,7 @@ class Application {
         Vec2 mouseCursor = Vec2(0,0);
         bool leftMouseButtonDown = false;
 
-        std::vector<std::unique_ptr<Body>> bodies;
+        std::vector<std::shared_ptr<Body>> bodies;
 
         void checkBounce(Body& body);
 

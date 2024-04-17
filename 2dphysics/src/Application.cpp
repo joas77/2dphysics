@@ -3,6 +3,7 @@
 #include "Physics/Constants.h"
 #include "Physics/Force.h"
 #include "Physics/CollisionDetection.h"
+#include "Physics/Contact.h"
 
 bool Application::IsRunning()
 {
@@ -16,8 +17,8 @@ void Application::Setup()
 {
     running = Graphics::OpenWindow();
 
-    bodies.push_back(std::make_unique<Body>(CircleShape(100), 100, 100, 1.0));
-    bodies.push_back(std::make_unique<Body>(CircleShape(50), 500, 100, 1.0));
+    bodies.push_back(std::make_shared<Body>(CircleShape(100), 100, 100, 1.0));
+    bodies.push_back(std::make_shared<Body>(CircleShape(50), 500, 100, 1.0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -36,8 +37,13 @@ void Application::Input()
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
-            // ...
+        case SDL_MOUSEMOTION:
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            bodies.at(0)->position.x = x;
+            bodies.at(0)->position.y = y;
             break;
+            // ...
         default:
             break;
         }
@@ -49,6 +55,7 @@ void Application::Input()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Update()
 {
+    Graphics::ClearScreen(0xFF0F0721);
     // Check if we are too fast, and if so waste some millisecons
     // until we reach the MILLISECS_PER_FRAME
     static int timePreviousFrame;
@@ -67,10 +74,10 @@ void Application::Update()
     for (auto &body : bodies)
     {
         // Apply the weight force
-        body->AddForce(Vec2(0.0, body->mass * G_ACCEL * PIXELS_PER_METER));
+        // body->AddForce(Vec2(0.0, body->mass * G_ACCEL * PIXELS_PER_METER));
 
         // Apply the wind force
-        body->AddForce(Vec2(20.0 * PIXELS_PER_METER, 0.0));
+        // body->AddForce(Vec2(20.0 * PIXELS_PER_METER, 0.0));
 
         body->Update(deltaTime);
         checkBounce(*body);
@@ -82,8 +89,12 @@ void Application::Update()
         {
             auto &a = bodies[i];
             auto &b = bodies[j];
-            if (CollisionDetection::IsColliding(*a, *b))
+            Contact contact;
+            if (CollisionDetection::IsColliding(*a, *b, contact))
             {
+                Graphics::DrawFillCircle(contact.start.x, contact.start.y, 3, 0xFFFF00FF);
+                Graphics::DrawFillCircle(contact.end.x, contact.end.y, 3, 0xFFFF00FF);
+                Graphics::DrawLine(contact.start.x, contact.start.y, contact.start.x + contact.normal.x * 15, contact.start.y + contact.normal.y * 15, 0xFFFF00FF);
                 a->isColliding = true;
                 b->isColliding = true;
             }
@@ -92,7 +103,7 @@ void Application::Update()
                 a->isColliding = false;
                 b->isColliding = false;
             }
-                }
+        }
     }
 }
 
@@ -101,8 +112,6 @@ void Application::Update()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Render()
 {
-    Graphics::ClearScreen(0xFF0F0721);
-
     for (auto &body : bodies)
     {
         Uint32 color = body->isColliding ? 0xFF0000FF : 0xFFFFFFFF;

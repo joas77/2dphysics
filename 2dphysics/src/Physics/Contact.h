@@ -6,14 +6,16 @@
 
 struct Contact
 {
-    Body* a;
-    Body* b;
+    const Body* a;
+    const Body* b;
 
+    Vec2 normal;
     Vec2 start;
     Vec2 end;
 
-    Vec2 normal;
     float depth;
+
+    void ResolvePenetration();
 };
 
 
