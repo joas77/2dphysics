@@ -17,7 +17,7 @@ void Application::Setup()
 {
     running = Graphics::OpenWindow();
 
-    bodies.push_back(std::make_shared<Body>(CircleShape(200), Graphics::Width()/2, Graphics::Height()/2, 0.0));
+    bodies.push_back(std::make_shared<Body>(CircleShape(200), Graphics::Width() / 2, Graphics::Height() / 2, 0.0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -36,17 +36,21 @@ void Application::Input()
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
-        // case SDL_MOUSEMOTION:
-        //     int x, y;
-        //     SDL_GetMouseState(&x, &y);
-        //     bodies.at(0)->position.x = x;
-        //     bodies.at(0)->position.y = y;
+            // case SDL_MOUSEMOTION:
+            //     int x, y;
+            //     SDL_GetMouseState(&x, &y);
+            //     bodies.at(0)->position.x = x;
+            //     bodies.at(0)->position.y = y;
             break;
         case SDL_MOUSEBUTTONDOWN:
+        {
             int x, y;
             SDL_GetMouseState(&x, &y);
-            bodies.push_back(std::make_shared<Body>(CircleShape(20), x, y, 5.0));
-            break;
+            auto smallBall = std::make_shared<Body>(CircleShape(40), x, y, 5.0);
+            smallBall->restitution = 0.5;
+            bodies.push_back(smallBall);
+        }
+        break;
         default:
             break;
         }
@@ -80,7 +84,7 @@ void Application::Update()
         body->AddForce(Vec2(0.0, body->GetMass() * G_ACCEL * PIXELS_PER_METER));
 
         // Apply the wind force
-        // body->AddForce(Vec2(20.0 * PIXELS_PER_METER, 0.0));
+        body->AddForce(Vec2(20.0 * PIXELS_PER_METER, 0.0));
 
         body->Update(deltaTime);
         checkBounce(*body);
@@ -95,12 +99,13 @@ void Application::Update()
             Contact contact;
             if (CollisionDetection::IsColliding(*a, *b, contact))
             {
+                // Resolve the collision using the impulse method
+                contact.ResolveCollision();
                 Graphics::DrawFillCircle(contact.start.x, contact.start.y, 3, 0xFFFF00FF);
                 Graphics::DrawFillCircle(contact.end.x, contact.end.y, 3, 0xFFFF00FF);
                 Graphics::DrawLine(contact.start.x, contact.start.y, contact.start.x + contact.normal.x * 15, contact.start.y + contact.normal.y * 15, 0xFFFF00FF);
                 a->isColliding = true;
                 b->isColliding = true;
-                contact.ResolvePenetration();
             }
             else
             {

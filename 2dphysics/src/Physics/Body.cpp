@@ -5,7 +5,8 @@
 Body::Body(const Shape &shape, float x, float y, float mass) : position{Vec2(x, y)},
                                                                velocity{Vec2(0, 0)},
                                                                acceleration{Vec2(0, 0)},
-                                                                shape{shape.Clone()},
+                                                               restitution{1.0},
+                                                               shape{shape.Clone()},
                                                                rotation{0}, angularVelocity{0}, angularAcceleration{0},
                                                                sumForces{Vec2(0, 0)}, sumTorque{0}, mass{mass}
 {
@@ -60,14 +61,23 @@ void Body::Update(float dt)
     const bool isPolygon = GetShape().GetType() == ShapeType::POLYGON || GetShape().GetType() == ShapeType::BOX;
     if (isPolygon)
     {
-        auto& polygonShape = dynamic_cast<PolygonShape&>(GetShape());
+        auto &polygonShape = dynamic_cast<PolygonShape &>(GetShape());
         polygonShape.UpdateVertices(GetRotation(), position);
     }
 }
 
+void Body::ApplyImpulse(const Vec2 &j)
+{
+    if (IsStatic())
+        return;
+
+    velocity += j * invMass;
+}
+
 void Body::IntegrateLinear(float dt)
 {
-    if (IsStatic()) return;
+    if (IsStatic())
+        return;
     // Find the acceleration based on the forces that are being applied and the mass
     acceleration = sumForces * invMass;
 
@@ -82,7 +92,8 @@ void Body::IntegrateLinear(float dt)
 
 void Body::IntegrateAngular(float dt)
 {
-    if (IsStatic()) return;
+    if (IsStatic())
+        return;
     // Find the angular acceleration based on the torque that is being applied and the moment of inertia
     angularAcceleration = sumTorque * invI;
 
@@ -106,7 +117,7 @@ const Shape &Body::GetShape() const
     return *shape;
 }
 
-Shape& Body::GetShape()
+Shape &Body::GetShape()
 {
     return *shape;
 }

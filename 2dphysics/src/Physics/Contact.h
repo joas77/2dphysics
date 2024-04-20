@@ -6,8 +6,8 @@
 
 struct Contact
 {
-    Body* a;
-    Body* b;
+    Body *a;
+    Body *b;
 
     Vec2 normal;
     Vec2 start;
@@ -16,7 +16,7 @@ struct Contact
     float depth;
 
     void ResolvePenetration();
+    void ResolveCollision();
 };
-
 
 #endif // CONTACT_H
