@@ -6,8 +6,8 @@
 
 namespace CollisionDetection
 {
-    bool IsColliding(const Body& a, const Body& b, Contact& contact);
-    bool IsCollidingCircleCircle(const Body& a, const Body& b, Contact& contact);
+    bool IsColliding(Body& a, Body& b, Contact& contact);
+    bool IsCollidingCircleCircle(Body& a, Body& b, Contact& contact);
 } // namespace CollissionDetection
 
 

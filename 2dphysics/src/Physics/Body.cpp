@@ -1,12 +1,13 @@
-#include "Body.h"
 #include <iostream>
+#include <cmath>
+#include "Body.h"
 
 Body::Body(const Shape &shape, float x, float y, float mass) : position{Vec2(x, y)},
                                                                velocity{Vec2(0, 0)},
                                                                acceleration{Vec2(0, 0)},
-                                                               mass{mass}, shape{shape.Clone()},
+                                                                shape{shape.Clone()},
                                                                rotation{0}, angularVelocity{0}, angularAcceleration{0},
-                                                               sumForces{Vec2(0, 0)}, sumTorque{0}
+                                                               sumForces{Vec2(0, 0)}, sumTorque{0}, mass{mass}
 {
     if (mass != 0.0)
         invMass = 1.0 / mass;
@@ -66,6 +67,7 @@ void Body::Update(float dt)
 
 void Body::IntegrateLinear(float dt)
 {
+    if (IsStatic()) return;
     // Find the acceleration based on the forces that are being applied and the mass
     acceleration = sumForces * invMass;
 
@@ -80,6 +82,7 @@ void Body::IntegrateLinear(float dt)
 
 void Body::IntegrateAngular(float dt)
 {
+    if (IsStatic()) return;
     // Find the angular acceleration based on the torque that is being applied and the moment of inertia
     angularAcceleration = sumTorque * invI;
 
@@ -108,3 +111,18 @@ Shape& Body::GetShape()
     return *shape;
 }
 
+float Body::GetInvMass() const
+{
+    return invMass;
+}
+
+float Body::GetMass() const
+{
+    return mass;
+}
+
+bool Body::IsStatic() const
+{
+    static constexpr float epsilon = 0.0001f;
+    return std::fabs(invMass - 0.0) < epsilon;
+}

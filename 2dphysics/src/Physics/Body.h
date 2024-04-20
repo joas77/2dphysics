@@ -5,8 +5,6 @@
 #include "Vec2.h"
 #include "Shape.h"
 
-// FIXME: shape shall be a pointer in order to be polymorphic
-// but should be a better maybe pass only the enum
 class Body {
 public:
     bool isColliding {false};
@@ -15,8 +13,13 @@ public:
     Vec2 velocity;
     Vec2 acceleration;
 
-    float mass;
-
+    /**
+     * @brief Body Constructor
+     * @param shape
+     * @param x position
+     * @param y position
+     * @param mass body mass, pass 0 if you want to simulate an infinite mass object
+    */
     Body(const Shape& shape, float x, float y, float mass);
     Body()=delete;
     ~Body();
@@ -30,6 +33,9 @@ public:
     float GetRotation() const;
     const Shape& GetShape() const;
     Shape& GetShape();
+    float GetMass() const;
+    float GetInvMass() const;
+    bool IsStatic() const;
 private:
     std::unique_ptr<Shape> shape;
     // Angular rotation
@@ -41,6 +47,7 @@ private:
     Vec2 sumForces;
     float sumTorque;
 
+    float mass;
     float invMass;
 
     float I;

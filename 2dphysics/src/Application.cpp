@@ -17,8 +17,7 @@ void Application::Setup()
 {
     running = Graphics::OpenWindow();
 
-    bodies.push_back(std::make_shared<Body>(CircleShape(100), 100, 100, 1.0));
-    bodies.push_back(std::make_shared<Body>(CircleShape(50), 500, 100, 1.0));
+    bodies.push_back(std::make_shared<Body>(CircleShape(200), Graphics::Width()/2, Graphics::Height()/2, 0.0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,13 +36,17 @@ void Application::Input()
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
-        case SDL_MOUSEMOTION:
+        // case SDL_MOUSEMOTION:
+        //     int x, y;
+        //     SDL_GetMouseState(&x, &y);
+        //     bodies.at(0)->position.x = x;
+        //     bodies.at(0)->position.y = y;
+            break;
+        case SDL_MOUSEBUTTONDOWN:
             int x, y;
             SDL_GetMouseState(&x, &y);
-            bodies.at(0)->position.x = x;
-            bodies.at(0)->position.y = y;
+            bodies.push_back(std::make_shared<Body>(CircleShape(20), x, y, 5.0));
             break;
-            // ...
         default:
             break;
         }
@@ -74,7 +77,7 @@ void Application::Update()
     for (auto &body : bodies)
     {
         // Apply the weight force
-        // body->AddForce(Vec2(0.0, body->mass * G_ACCEL * PIXELS_PER_METER));
+        body->AddForce(Vec2(0.0, body->GetMass() * G_ACCEL * PIXELS_PER_METER));
 
         // Apply the wind force
         // body->AddForce(Vec2(20.0 * PIXELS_PER_METER, 0.0));
@@ -97,6 +100,7 @@ void Application::Update()
                 Graphics::DrawLine(contact.start.x, contact.start.y, contact.start.x + contact.normal.x * 15, contact.start.y + contact.normal.y * 15, 0xFFFF00FF);
                 a->isColliding = true;
                 b->isColliding = true;
+                contact.ResolvePenetration();
             }
             else
             {

@@ -2,7 +2,7 @@
 
 namespace CollisionDetection
 {
-    bool IsColliding(const Body& a, const Body& b, Contact& contact)
+    bool IsColliding(Body& a, Body& b, Contact& contact)
     {
         const auto& shapeA = a.GetShape().GetType();
         const auto& shapeB = b.GetShape().GetType();
@@ -15,7 +15,7 @@ namespace CollisionDetection
         return false;
     }
 
-    bool IsCollidingCircleCircle(const Body &a, const Body &b, Contact& contact)
+    bool IsCollidingCircleCircle(Body &a, Body &b, Contact& contact)
     {
         const auto& circleShapeA = dynamic_cast<const CircleShape&>(a.GetShape());
         const auto& circleShapeB = dynamic_cast<const CircleShape&>(b.GetShape());

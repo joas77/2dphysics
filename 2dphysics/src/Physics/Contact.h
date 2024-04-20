@@ -6,8 +6,8 @@
 
 struct Contact
 {
-    const Body* a;
-    const Body* b;
+    Body* a;
+    Body* b;
 
     Vec2 normal;
     Vec2 start;

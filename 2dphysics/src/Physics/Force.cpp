@@ -38,7 +38,7 @@ Vec2 Force::GenerateGravitationalForce(
     Vec2 attractionDirection = d.UnitVector();
 
     // Calculate the strength of the attraction force
-    float attractionMagnitude = G * a.mass * b.mass / distanceSquared;
+    float attractionMagnitude = G  / (a.GetInvMass() * b.GetInvMass() * distanceSquared);
 
     // Calculate the final resulting attraction force vector
     return attractionDirection * attractionMagnitude;
